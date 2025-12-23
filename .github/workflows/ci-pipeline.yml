@@ -26,6 +26,7 @@ on:
 
       branches:
         - main
+        - dev-be-ip-mapping
 
 concurrency:
   group: ${{ github.event.number }}

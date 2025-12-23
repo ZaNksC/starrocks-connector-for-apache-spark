@@ -62,6 +62,17 @@ public abstract class Settings implements Serializable {
         return defaultValue;
     }
 
+    public boolean getBooleanProperty(String name, boolean defaultValue) {
+        try {
+            if (getProperty(name) != null) {
+                return Boolean.parseBoolean(getProperty(name));
+            }
+        } catch (NumberFormatException e) {
+            logger.warn(ErrorMessages.PARSE_NUMBER_FAILED_MESSAGE, name, getProperty(name));
+        }
+        return defaultValue;
+    }
+
     public Settings merge(Properties properties) {
         if (properties == null || properties.isEmpty()) {
             return this;

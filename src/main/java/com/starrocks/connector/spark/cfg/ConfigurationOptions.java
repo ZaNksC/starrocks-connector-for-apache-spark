@@ -80,6 +80,14 @@ public interface ConfigurationOptions {
     String STARROCKS_DESERIALIZE_QUEUE_SIZE = "starrocks.deserialize.queue.size";
     int STARROCKS_DESERIALIZE_QUEUE_SIZE_DEFAULT = 64;
 
+    String STARROCKS_BE_IP_MAP = "starrocks.be.ip.map";
+
+    boolean STARROCKS_BE_IP_MAP_DEFAULT = false;
+
+    String STARROCKS_BE_IP_MAP_CONFIG_PATH = "starrocks.be.ip.map.config.path";
+
+    String STARROCKS_BE_IP_MAP_CONFIG_PATH_DEFAULT = "ipmap.properties";
+
     static Map<String, String> makeWriteCompatibleWithRead(Map<String, String> options) {
         // user and password compatible
         Map<String, String> configMap = new HashMap(options);

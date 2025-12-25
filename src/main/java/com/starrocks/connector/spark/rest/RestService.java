@@ -20,6 +20,7 @@
 package com.starrocks.connector.spark.rest;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,6 +54,7 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -66,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static com.starrocks.connector.spark.cfg.ConfigurationOptions.STARROCKS_FENODES;
 import static com.starrocks.connector.spark.cfg.ConfigurationOptions.STARROCKS_FILTER_QUERY;
@@ -315,18 +318,27 @@ public class RestService implements Serializable {
             // get map config file
             String ipMapConfigPath = cfg.getProperty(ConfigurationOptions.STARROCKS_BE_IP_MAP_CONFIG_PATH,
                     ConfigurationOptions.STARROCKS_BE_IP_MAP_CONFIG_PATH_DEFAULT);
-            Properties props = new Properties();
-            try (FileInputStream fis = new FileInputStream("config.properties")) {
-                props.load(fis);
-            } catch (IOException e) {
+
+            Map<String, String> mapConf;
+            try {
+                List<Map<String, String>> list = JSON_OBJECT_MAPPER.readValue(
+                        new File(ipMapConfigPath), new TypeReference<List<Map<String, String>>>() {}
+                );
+                mapConf = list.stream()
+                        .collect(Collectors.toMap(m -> m.get("from"), m -> m.get("to"), (oldVal, newVal) -> newVal));
+            } catch (Exception e) {
                 logger.error("Config starrocks.be.ip.map is on,Need a config file,Path is {}", ipMapConfigPath);
                 throw new StarRocksException("Read ipmap file Error.", e);
             }
+            logger.info("Input mapped config is {}", mapConf);
+            logger.info("Old Be2Tablets Keys: {}", be2Tablets.keySet());
             Map<String, List<Long>> mapped = new HashMap<>();
             for (Map.Entry<String, List<Long>> entry : be2Tablets.entrySet()) {
-                String mappedIpOrHost = props.getProperty(entry.getKey(), entry.getKey());
+                String mappedIpOrHost = mapConf.getOrDefault(entry.getKey(), entry.getKey());
                 mapped.put(mappedIpOrHost, entry.getValue());
+                logger.info("Mapped ip from {} to {}", entry.getKey(), mappedIpOrHost);
             }
+            logger.info("New Be2Tablets Keys: {}", mapped.keySet());
             return mapped;
         }
         return be2Tablets;

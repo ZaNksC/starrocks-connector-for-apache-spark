@@ -86,7 +86,7 @@ public interface ConfigurationOptions {
 
     String STARROCKS_BE_IP_MAP_CONFIG_PATH = "starrocks.be.ip.map.config.path";
 
-    String STARROCKS_BE_IP_MAP_CONFIG_PATH_DEFAULT = "ipmap.properties";
+    String STARROCKS_BE_IP_MAP_CONFIG_PATH_DEFAULT = "ipmap.json";
 
     static Map<String, String> makeWriteCompatibleWithRead(Map<String, String> options) {
         // user and password compatible
